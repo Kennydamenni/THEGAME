@@ -1,23 +1,56 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float Speed = 5f;
+    private float Speed = 5f;
+    private float horizontal;
+    private float jumpingPower = 16f;
+    private bool isFacingRight = true;
 
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private LayerMask groundLayer;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Debug.Log("Left was pressed");
+        horizontal = Input.GetAxisRaw("Horizontal");
 
-            //transform.Translate(Vector2.left * Speed * Time.deltaTime);
+        if(Input.GetButtonDown("Jump") && isGounded())
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpingPower);
+        }
+
+        if (Input.GetButtonUp("Jump") && rb.linearVelocity.y > 0f)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.5f);
+        }   
+    }
+
+    private bool isGounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+    }
+
+
+    private void FixedUpdate()
+    {
+        rb.linearVelocity = new Vector2(horizontal * Speed, rb.linearVelocity.y);
+    }
+    private void Flip()
+    {
+        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
+        {
+            isFacingRight = !isFacingRight;
+            Vector3 localScale = transform.localScale;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
         }
     }
 }
